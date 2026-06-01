@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFAITH Engine - The Healer's Touch (A2)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600&family=Cinzel:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #050403;
+            color: #f4f4f5; 
+            overflow: hidden; 
+            margin: 0; height: 100vh; width: 100vw;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Classic Fonts */
+        .font-serif-classic { font-family: 'Playfair Display', serif; }
+        .font-sans-ui { font-family: 'Inter', sans-serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+
+        /* Tokens */
+        .text-sacred-gold { color: #D4AF37; }
+        .bg-sacred-gold { background-color: #D4AF37; }
+
+        /* Dusty / Desert Aesthetics */
+        .desert-bg {
+            position: absolute; inset: 0;
+            background-image: url("https://images.unsplash.com/photo-1509316785289-025f5b846b35?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80");
+            background-size: cover; background-position: center;
+            opacity: 0.15; mix-blend-mode: luminosity; pointer-events: none; z-index: 0;
+            filter: sepia(0.5) contrast(1.2);
+        }
+        .dust-overlay {
+            position: absolute; inset: 0;
+            background-image: url("https://www.transparenttextures.com/patterns/concrete-wall.png");
+            opacity: 0.2; mix-blend-mode: color-dodge; pointer-events: none; z-index: 0;
+        }
+
+        /* Divine Light Glow */
+        .divine-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 120vw; height: 120vw; border-radius: 50%;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            pointer-events: none; z-index: 0; animation: pulseGlow 8s infinite alternate ease-in-out;
+        }
+        @keyframes pulseGlow { 0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); } 100% { opacity: 1.2; transform: translate(-50%, -50%) scale(1.05); } }
+
+        .cross-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 90vh; color: #D4AF37; opacity: 0.015; pointer-events: none; z-index: 0; filter: drop-shadow(0 0 50px rgba(212,175,55,0.5)); }
+        
+        /* Gilded Architecture */
+        .gilded-edges { position: fixed; top: 0; bottom: 0; width: 12px; pointer-events: none; z-index: 10; background: repeating-linear-gradient(to bottom, #8B6508 0px, #D4AF37 2px, #B8860B 4px, #FFD700 5px); box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+        .gilded-edge-left { left: 0; border-right: 2px solid rgba(0,0,0,0.9); }
+        .gilded-edge-right { right: 0; border-left: 2px solid rgba(0,0,0,0.9); }
+        .bookmark-ribbon { position: fixed; top: -10px; right: 12%; width: 45px; height: 160px; z-index: 60; background: linear-gradient(to right, #2a1b14, #4a2b1c, #2a1b14); box-shadow: -5px 10px 20px rgba(0,0,0,0.8), inset 0 -10px 20px rgba(0,0,0,0.5); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%); pointer-events: none; transform: rotate(3deg); border-bottom: 2px solid rgba(212,175,55,0.5); }
+        .gold-foil-frame { position: fixed; inset: 15px 25px; pointer-events: none; z-index: 49; border: 1px solid rgba(212, 175, 55, 0.2); outline: 1px dashed rgba(212, 175, 55, 0.1); outline-offset: -5px; }
+
+        /* UI Elements */
+        .safe-scroll-container { display: flex; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; padding: 0 30px;}
+        .safe-scroll-container::-webkit-scrollbar { width: 5px; }
+        .safe-scroll-container::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); border-radius: 5px; }
+        .safe-scroll-content { margin: auto; width: 100%; padding: 4rem 1rem 8rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        .bible-card { background: linear-gradient(180deg, rgba(15, 10, 8, 0.95) 0%, rgba(10, 5, 3, 0.98) 100%); backdrop-filter: blur(20px); border: 2px solid #2a1b14; box-shadow: 0 0 0 1px rgba(212,175,55,0.1), 0 0 0 4px rgba(10,10,10,0.8), 0 0 0 5px rgba(212,175,55,0.3), 0 30px 60px rgba(0,0,0,0.9); border-radius: 6px; position: relative; width: 100%; max-width: 1000px; padding: 3rem; }
+        .bible-card::before { content: ''; position: absolute; inset: 8px; border: 1px dashed rgba(212,175,55,0.2); pointer-events: none; }
+        
+        .btn-gold { background: linear-gradient(135deg, #FFDF73 0%, #D4AF37 40%, #996515 80%, #5c3c08 100%); color: #050505; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; border: 1px solid #FFED99; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3), inset 0 2px 5px rgba(255,255,255,0.5); transition: all 0.3s ease; border-radius: 3px; padding: 16px 36px; cursor: pointer; text-shadow: 0 1px 1px rgba(255,255,255,0.3); display: inline-flex; align-items: center; justify-content: center; }
+        .btn-gold:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.6); }
+
+        /* Restoration Scale Mechanic */
+        .restoration-bg { position: absolute; inset: 0; background-image: url("https://images.unsplash.com/photo-1509316785289-025f5b846b35?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"); background-size: cover; background-position: center; z-index: 0; transition: all 2s ease; }
+        .sick-filter { position: absolute; inset: 0; background: #3a3a3a; mix-blend-mode: color; transition: opacity 1.5s ease; z-index: 1; }
+        .health-bar-container { width: 100%; height: 8px; background: #111; border-radius: 4px; overflow: hidden; margin-top: 2rem; border: 1px solid #333; }
+        .health-bar { height: 100%; background: linear-gradient(90deg, #9B2C2C 0%, #D4AF37 50%, #10B981 100%); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .resto-btn { background: rgba(0,0,0,0.6); border: 2px solid #D4AF37; color: #fff; font-family: 'Playfair Display', serif; font-weight: bold; font-size: 1.5rem; padding: 15px 30px; border-radius: 4px; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(5px); }
+        .resto-btn:hover { background: rgba(212,175,55,0.2); transform: scale(1.05); }
+
+        /* Teacher Tools */
+        .side-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 500px; height: 100vh; background: rgba(10, 5, 2, 0.98); backdrop-filter: blur(20px); border-left: 2px solid #D4AF37; z-index: 100; transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; box-shadow: -20px 0 50px rgba(0,0,0,0.9); }
+        .side-panel.open { right: 0; }
+        .praise-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .praise-text { font-family: 'Playfair Display', serif; font-size: 5rem; color: #FFD700; text-shadow: 0 0 40px rgba(212,175,55,1), 0 0 80px rgba(212,175,55,0.6); animation: praiseFade 3s ease-out forwards; font-weight: 900; font-style: italic; }
+        @keyframes praiseFade { 0% { opacity: 0; transform: scale(0.5); } 20% { opacity: 1; transform: scale(1.1); } 80% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .vocab-trigger { color: #D4AF37; border-bottom: 2px dashed rgba(212,175,55,0.4); cursor: pointer; transition: all 0.3s; position: relative; font-weight: bold; }
+        .vocab-trigger:hover { color: #fff; border-bottom-style: solid; text-shadow: 0 0 15px rgba(212,175,55,0.9); }
+        @keyframes slideDownFade { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slideDownFade { animation: slideDownFade 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="selection:bg-[#D4AF37]/30 selection:text-white">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const YOUTUBE_ID = "VL8DThllZAY"; 
+
+        const t = (obj, lang) => {
+            if (!obj) return '';
+            if (typeof obj === 'string') return obj;
+            return obj[lang] || obj['en'] || '';
+        };
+
+        const Icon = ({ name, size = 24, className = "" }) => <i className={`fa-solid fa-${name} ${className}`} style={{ fontSize: size }}></i>;
+        
+        const Divider = () => (
+            <div className="flex items-center justify-center w-full my-8 opacity-60">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+                <div className="mx-6 text-[#D4AF37] text-sm"><Icon name="hand-holding-hand" size={14} /></div>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#D4AF37] to-transparent"></div>
+            </div>
+        );
+
+        // ==========================================
+        // 🛠️ TEACHER TOOLS
+        // ==========================================
+        const TeacherTools = ({ lang, toggleLang, isFs, toggleFs }) => {
+            const [open, setOpen] = useState(false);
+            const [praise, setPraise] = useState(false);
+
+            const triggerPraise = () => { setPraise(true); setTimeout(() => setPraise(false), 3000); };
+
+            return (
+                <React.Fragment>
+                    <div className="fixed top-6 right-6 z-[100] flex gap-4">
+                        <button onClick={toggleLang} className="bg-black/80 border border-[#D4AF37]/50 text-[#D4AF37] px-4 h-12 rounded hover:bg-[#D4AF37]/20 transition-all font-bold text-xs uppercase tracking-widest backdrop-blur-md shadow-lg">
+                            <Icon name="globe" size={14} className="mr-2"/> {lang === 'en' ? 'PT' : 'EN'}
+                        </button>
+                        <button onClick={() => setOpen(!open)} className="bg-black/80 border border-[#D4AF37]/50 text-[#D4AF37] w-12 h-12 rounded hover:bg-[#D4AF37]/20 transition-all flex items-center justify-center backdrop-blur-md shadow-lg" title={lang === 'en' ? "Teacher's Board" : "Lousa do Professor"}><Icon name="feather" size={18} /></button>
+                        <button onClick={triggerPraise} className="bg-black/80 border border-emerald-500/50 text-emerald-400 w-12 h-12 rounded hover:bg-emerald-500/20 transition-all flex items-center justify-center backdrop-blur-md shadow-lg" title={lang === 'en' ? "Send Praise" : "Enviar Elogio"}><Icon name="star" size={18} /></button>
+                        <button onClick={toggleFs} className="bg-black/80 border border-blue-500/50 text-blue-400 w-12 h-12 rounded hover:bg-blue-500/20 transition-all flex items-center justify-center backdrop-blur-md shadow-lg" title={lang === 'en' ? "Fullscreen" : "Tela Cheia"}><Icon name={isFs ? "compress" : "expand"} size={18} /></button>
+                    </div>
+
+                    <div className={`side-panel p-8 ${open ? 'open' : ''}`}>
+                        <div className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
+                            <h2 className="text-[#D4AF37] font-serif-classic text-2xl italic flex items-center gap-3"><Icon name="feather" size={20}/> Theological Notes</h2>
+                            <button onClick={() => setOpen(false)} className="text-zinc-500 hover:text-white"><Icon name="xmark" size={28}/></button>
+                        </div>
+                        <textarea className="flex-1 w-full bg-black/50 border border-zinc-800 rounded p-6 text-zinc-300 font-sans-ui text-lg leading-relaxed resize-none outline-none focus:border-[#D4AF37]" placeholder={lang === 'en' ? "Write notes..." : "Escreva as notas da aula..."}></textarea>
+                    </div>
+
+                    {praise && (
+                        <div className="praise-overlay">
+                            <div className="praise-text flex flex-col items-center">
+                                <Icon name="crown" size={100} className="mb-6 text-[#D4AF37]" />
+                                <span>{lang === 'en' ? "EXCELLENT!" : "EXCELENTE!"}</span>
+                            </div>
+                        </div>
+                    )}
+                </React.Fragment>
+            );
+        };
+
+        // ==========================================
+        // 🧩 V8.0 COMPONENTS (The Healer's Touch)
+        // ==========================================
+
+        const CoverSlide = ({ s, lang, next }) => (
+            <div className="text-center animate-fadeIn flex flex-col items-center w-full max-w-4xl z-10">
+                <Icon name="hands-holding-child" size={60} className="text-[#D4AF37] mb-8 drop-shadow-[0_0_30px_rgba(212,175,55,0.8)]" />
+                <h1 className="text-5xl md:text-8xl font-serif-classic text-white mb-6 italic tracking-tight drop-shadow-[0_0_20px_rgba(0,0,0,1)]">{t(s.title, lang)}</h1>
+                <h2 className="text-xl md:text-2xl text-[#D4AF37] font-sans-ui font-black mb-8 tracking-[0.3em] uppercase drop-shadow-md">{t(s.subtitle, lang)}</h2>
+                
+                <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-6 opacity-60"></div>
+                
+                <div className="flex gap-4 text-xs font-bold text-zinc-300 uppercase tracking-widest mb-12 bg-black/40 px-6 py-3 border border-[#D4AF37]/20 rounded backdrop-blur-md">
+                    <span>{s.level}</span> <span className="text-[#D4AF37]">|</span> <span>{s.grammar}</span>
+                </div>
+                <button onClick={next} className="btn-gold text-lg px-12 py-4"><Icon name="play" className="mr-3" /> {lang === 'en' ? 'Start Journey' : 'Iniciar Jornada'}</button>
+            </div>
+        );
+
+        const GuideSlide = ({ s, lang }) => (
+            <div className="bible-card text-left animate-fadeIn z-10">
+                <div className="flex items-center gap-4 mb-8 border-b border-[#D4AF37]/30 pb-4">
+                    <Icon name="scroll" size={40} className="text-[#D4AF37]" />
+                    <h2 className="text-3xl font-serif-classic text-[#D4AF37]">{t(s.title, lang)}</h2>
+                </div>
+                <p className="text-zinc-300 font-sans-ui text-xl leading-relaxed font-light">{t(s.content, lang)}</p>
+            </div>
+        );
+
+        const DiscussionSlide = ({ s, lang }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name={s.icon || "comments"} size={50} className="text-[#D4AF37] mb-8 opacity-80 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]" />
+                <h2 className="text-2xl font-sans-ui font-black mb-6 text-[#D4AF37] uppercase tracking-[0.2em]">{t(s.title, lang)}</h2>
+                <p className="text-3xl md:text-5xl text-white font-serif-classic italic leading-relaxed mb-12">"{t(s.question, lang)}"</p>
+                <div className="bg-black/60 border border-[#2a1b14]/50 p-8 w-full max-w-2xl text-left backdrop-blur-md rounded shadow-inner">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-4 flex items-center gap-2">
+                        <Icon name="lightbulb" size={14}/> {lang === 'en' ? 'Speaking Starters (A2)' : 'Para Iniciar a Conversa (A2)'}
+                    </p>
+                    <div className="space-y-3">
+                        {t(s.hint, lang).split('/').map((h, i) => (
+                            <p key={i} className="text-lg text-zinc-300 font-sans-ui font-light border-l-2 border-[#D4AF37] pl-4 py-1 hover:border-white transition-colors cursor-default">
+                                "{h.trim()}"
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const VocabMatchSlide = ({ s, lang }) => {
+            const [selectedW, setSelectedW] = useState(null);
+            const [matches, setMatches] = useState([]);
+            const [defs, setDefs] = useState([]);
+            
+            useEffect(() => {
+                setDefs([...s.pairs].sort(() => Math.random() - 0.5));
+            }, [s.pairs]);
+
+            const handleWordClick = (w) => {
+                if(matches.includes(w)) return;
+                setSelectedW(selectedW === w ? null : w);
+            };
+
+            const handleDefClick = (d) => {
+                if(!selectedW) return;
+                const correctPair = s.pairs.find(p => p.w === selectedW);
+                if(correctPair && correctPair.d === d) {
+                    setMatches([...matches, selectedW]);
+                    setSelectedW(null);
+                } else {
+                    setSelectedW(null);
+                }
+            };
+
+            const isComplete = matches.length === s.pairs.length && s.pairs.length > 0;
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                    <Icon name="puzzle-piece" size={50} className="text-[#D4AF37] mb-6 opacity-80" />
+                    <h2 className="text-3xl font-sans-ui font-black mb-4 text-[#D4AF37] uppercase tracking-widest">{t(s.title, lang)}</h2>
+                    <p className="text-xl text-zinc-300 font-serif-classic italic mb-10">{lang === 'en' ? "Match the word to its meaning." : "Ligue a palavra ao seu significado."}</p>
+                    
+                    <div className="grid grid-cols-2 gap-8 w-full max-w-4xl mb-6">
+                        <div className="flex flex-col gap-4">
+                            {s.pairs.map((p, i) => {
+                                const isMatched = matches.includes(p.w);
+                                const isSelected = selectedW === p.w;
+                                return (
+                                    <button key={i} onClick={() => handleWordClick(p.w)} disabled={isMatched}
+                                        className={`p-4 rounded border transition-all font-serif-classic text-xl shadow-md ${isMatched ? 'bg-emerald-900/30 border-emerald-500 text-emerald-400' : isSelected ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] scale-105' : 'bg-black/60 border-zinc-700 text-white hover:border-[#D4AF37]/50'}`}>
+                                        {t(p.w, lang)}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            {defs.map((p, i) => {
+                                const isMatched = matches.includes(p.w);
+                                return (
+                                    <button key={i} onClick={() => handleDefClick(p.d)} disabled={isMatched}
+                                        className={`p-4 rounded border transition-all text-left font-sans-ui text-sm shadow-md ${isMatched ? 'bg-emerald-900/30 border-emerald-500 text-emerald-400 opacity-50' : 'bg-black/60 border-zinc-700 text-zinc-300 hover:border-[#D4AF37]/50 hover:bg-black/80'}`}>
+                                        {t(p.d, lang)}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {isComplete && (
+                        <div className="bg-[#1a0f0f]/80 border border-[#722F37]/50 p-6 w-full max-w-3xl text-left rounded shadow-inner animate-fadeIn mt-4">
+                            <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2"><Icon name="comments" size={14}/> Discussion Unlocked</p>
+                            <p className="text-2xl text-white font-serif-classic italic mb-4">"{t(s.followUpQ, lang)}"</p>
+                            <p className="text-sm text-zinc-300 font-sans-ui italic border-l-2 border-[#D4AF37] pl-3">"{t(s.followUpHint, lang)}"</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ScholarDeskSlide = ({ title, content, lang }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <div className="bible-card">
+                    <div className="flex items-center gap-4 mb-8 border-b border-[#D4AF37]/20 pb-4 justify-center">
+                        <Icon name="book-open" className="text-[#D4AF37] w-6 h-6" />
+                        <h2 className="font-sans-ui font-black text-xl text-[#D4AF37] uppercase tracking-[0.2em]">{t(title, lang)}</h2>
+                    </div>
+                    <p className="font-serif-classic text-2xl leading-loose text-zinc-300">
+                        {t(content, lang)}
+                    </p>
+                </div>
+            </div>
+        );
+
+        const GrammarSlide = ({ s, lang }) => (
+            <div className="bible-card text-center animate-fadeIn z-10 mx-auto">
+                <Icon name={s.icon || "book-open"} size={50} className="text-[#D4AF37] mb-6 drop-shadow-md" />
+                <h2 className="text-3xl font-sans-ui font-black mb-4 text-white tracking-[0.2em] uppercase">{t(s.title, lang)}</h2>
+                <p className="text-zinc-400 mb-10 font-serif-classic italic text-xl">{t(s.subtitle, lang)}</p>
+                <div className="space-y-6 text-left border-l-2 border-[#D4AF37] pl-8 ml-2 md:ml-10 bg-black/40 p-6 rounded-r">
+                    {s.examples && s.examples.map((ex, i) => (
+                        <p key={i} className="text-xl md:text-2xl text-white font-serif-classic italic drop-shadow-md" dangerouslySetInnerHTML={{ __html: t(ex, lang) }}></p>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const DilemmaSlide = ({ s, lang }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name="scale-balanced" size={50} className="text-[#D4AF37] mb-8 opacity-80" />
+                <h2 className="text-3xl font-sans-ui font-black mb-8 text-[#D4AF37] uppercase tracking-widest">{t(s.title, lang)}</h2>
+                <p className="text-3xl md:text-4xl text-white font-serif-classic italic leading-relaxed mb-12">"{t(s.question, lang)}"</p>
+                <div className="bg-[#1a0f0f]/80 border border-[#722F37]/50 p-6 w-full max-w-2xl mx-auto text-left rounded shadow-inner">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-2">{lang === 'en' ? 'Speak your truth' : 'Fale a sua verdade'}</p>
+                    <p className="text-lg text-zinc-300 font-sans-ui font-light italic">"{t(s.hint, lang)}"</p>
+                </div>
+            </div>
+        );
+
+        // NOVO: The Restoration Scale
+        const RestorationScaleSlide = ({ s, lang, nextStep }) => {
+            const [health, setHealth] = useState(0);
+            const [currentQ, setCurrentQ] = useState(0);
+            
+            const handleAnswer = (isCorrect) => {
+                if(isCorrect) {
+                    const newHealth = health + (100 / s.questions.length);
+                    setHealth(newHealth);
+                    
+                    if(currentQ < s.questions.length - 1) {
+                        setCurrentQ(q => q + 1);
+                    } else {
+                        setTimeout(nextStep, 5000); // Wait for the glow explosion
+                    }
+                }
+            };
+
+            const q = s.questions[currentQ];
+            const isDone = health >= 99;
+
+            return (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 animate-fadeIn text-center relative z-10 overflow-hidden">
+                    {/* The Background Filter that heals */}
+                    <div className="restoration-bg" style={{ filter: `sepia(${1 - (health/100)}) contrast(${1 + (health/100)}) brightness(${0.5 + (health/100)})` }}></div>
+                    <div className="sick-filter" style={{ opacity: 1 - (health/100) }}></div>
+
+                    <div className="relative z-20 w-full max-w-4xl flex flex-col items-center">
+                        <Icon name="heart-pulse" size={50} className={`mb-6 drop-shadow-md transition-colors duration-1000 ${isDone ? 'text-[#D4AF37]' : 'text-zinc-500'}`} />
+                        <h2 className="text-3xl font-sans-ui font-black mb-2 text-white uppercase tracking-[0.2em] drop-shadow-md">{t(s.title, lang)}</h2>
+                        <p className="text-xl text-zinc-300 font-serif-classic italic mb-10 drop-shadow-md">{t(s.desc, lang)}</p>
+
+                        {!isDone ? (
+                            <div className="w-full max-w-2xl bg-black/70 backdrop-blur-md p-8 border border-zinc-700 rounded-lg shadow-2xl animate-fadeIn">
+                                <p className="text-2xl font-serif-classic text-white mb-8">"{t(q.text, lang)}"</p>
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    {q.options.map((opt, i) => (
+                                        <button key={i} onClick={() => handleAnswer(i === q.correct)} className="resto-btn">
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="animate-fadeIn mt-10">
+                                <p className="text-6xl font-serif-classic italic text-[#D4AF37] drop-shadow-[0_0_30px_rgba(212,175,55,1)]">
+                                    "{lang === 'en' ? 'Be clean.' : 'Sê limpo.'}"
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="health-bar-container max-w-2xl">
+                            <div className="health-bar" style={{ width: `${health}%` }}></div>
+                        </div>
+                        <p className="mt-4 text-[#D4AF37] font-bold tracking-widest text-xs uppercase">{Math.round(health)}% Restored</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const VideoChunkSlide = ({ s, lang }) => {
+            const videoSrc = `https://www.youtube.com/embed/${YOUTUBE_ID}?start=${s.start}&end=${s.end}&rel=0&modestbranding=1&showinfo=0`;
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn text-center z-10">
+                    <p className="text-zinc-500 font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-4">Scene Chunk {s.chunk}</p>
+                    <h2 className="text-3xl font-serif-classic italic text-[#D4AF37] mb-2">{t(s.title, lang)}</h2>
+                    <p className="text-sm text-zinc-400 font-sans-ui font-bold tracking-widest uppercase mb-8">{t(s.mission, lang)}</p>
+                    <div className="w-full aspect-video bg-black border border-[#D4AF37]/30 shadow-[0_0_40px_rgba(0,0,0,0.8)] p-2 rounded relative">
+                        <div className="absolute inset-0 border border-[#D4AF37]/20 rounded pointer-events-none"></div>
+                        <iframe className="w-full h-full" src={videoSrc} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen></iframe>
+                    </div>
+                </div>
+            );
+        };
+
+        const ScriptSlide = ({ s, lang }) => {
+            const [showFollowUp, setShowFollowUp] = useState(false);
+            
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-5xl mx-auto p-6 animate-fadeIn z-10">
+                    <p className="text-zinc-500 font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-8">Text Analysis</p>
+                    <div className="w-full flex flex-col md:flex-row gap-8 items-stretch">
+                        <div className="flex-[1.5] bible-card !p-10 flex flex-col justify-center border-l-4 border-l-[#D4AF37]">
+                            <p className="text-xs text-[#D4AF37] font-bold uppercase tracking-widest mb-4">{t(s.speaker, lang)}</p>
+                            <p className="text-3xl md:text-4xl text-white font-serif-classic italic leading-relaxed">"{t(s.quote, lang)}"</p>
+                        </div>
+                        <div className="flex-1 flex flex-col gap-4">
+                            <div className="bg-black/80 p-6 border border-zinc-800 rounded">
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">{lang === 'en' ? 'Meaning' : 'Significado'}</p>
+                                <p className="text-base text-zinc-300 font-sans-ui leading-relaxed">{t(s.analysis, lang)}</p>
+                            </div>
+                            {s.followUpQ && (
+                                <div className="bg-[#1a0f0f]/80 p-6 border border-[#722F37]/50 rounded flex flex-col justify-center shadow-inner">
+                                    {!showFollowUp ? (
+                                        <button onClick={() => setShowFollowUp(true)} className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center py-2"><Icon name="comments" className="mr-2"/> {lang === 'en' ? 'Discuss Meaning' : 'Discutir Sentido'}</button>
+                                    ) : (
+                                        <div className="animate-fadeIn">
+                                            <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-[10px] mb-2">Reflection</p>
+                                            <p className="text-lg text-white font-serif-classic italic mb-3">"{t(s.followUpQ, lang)}"</p>
+                                            <p className="text-xs text-zinc-400 font-sans-ui italic border-l-2 border-[#D4AF37] pl-2">"{t(s.followUpHint, lang)}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const GrammarComparatives = ({ lang }) => (
+            <div className="bible-card text-center animate-fadeIn z-10 mx-auto">
+                <Icon name="arrow-up-right-dots" size={50} className="text-[#D4AF37] mb-6 drop-shadow-md" />
+                <h2 className="text-3xl font-sans-ui font-black mb-4 text-white tracking-[0.2em] uppercase">Comparatives & Superlatives</h2>
+                <p className="text-zinc-400 mb-10 font-serif-classic italic text-xl">{lang==='en'?'Changing states and finding the ultimate truth.':'Mudar de estado e encontrar a verdade absoluta.'}</p>
+                
+                <div className="grid md:grid-cols-2 gap-8 text-left">
+                    <div className="bg-black/40 border border-[#D4AF37] p-6 rounded">
+                        <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-xs mb-4">Comparatives (+er)</p>
+                        <p className="text-zinc-300 text-sm mb-4">{lang==='en'?'To compare two things or states.':'Para comparar duas coisas ou estados.'}</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-[#D4AF37] pl-4 mb-2">"His life is <span className="text-[#D4AF37]">better</span> now."</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-[#D4AF37] pl-4">"He is <span className="text-[#D4AF37]">cleaner</span> than before."</p>
+                    </div>
+                    <div className="bg-black/40 border border-emerald-600 p-6 rounded">
+                        <p className="text-emerald-500 font-bold uppercase tracking-widest text-xs mb-4">Superlatives (the +est)</p>
+                        <p className="text-zinc-300 text-sm mb-4">{lang==='en'?'The highest degree of something.':'O grau mais elevado de algo.'}</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-emerald-500 pl-4 mb-2">"It was <span className="text-emerald-400">the darkest</span> moment."</p>
+                        <p className="text-xl text-white font-serif-classic italic border-l-2 border-emerald-500 pl-4">"God's love is <span className="text-emerald-400">the greatest</span>."</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const IlluminatedMatthew = ({ lang }) => {
+            const [openKey, setOpenKey] = useState(null);
+
+            const verses = {
+                en: "Jesus reached out his {hand} and {touched} him. 'I am {willing},' he said. 'Be {clean}.'",
+                pt: "Jesus estendeu a sua {hand} e {touched} nele. 'Eu {willing},' disse ele. 'Sê {clean}.'"
+            };
+            
+            const glossary = {
+                "hand": { word: { en: "hand", pt: "mão" }, icon: "hand", title: { en: "The Hand", pt: "A Mão" }, en: "A symbol of action and power.", pt: "Um símbolo de ação e poder.", sketch: { en: "No one else would use their hand to touch him.", pt: "Ninguém mais usaria a mão para o tocar." } },
+                "touched": { word: { en: "touched", pt: "tocou" }, icon: "hand-holding-hand", title: { en: "Touched", pt: "Tocou" }, en: "Physical contact.", pt: "Contacto físico.", sketch: { en: "According to the law, touching made you unclean. But Jesus' touch makes the man clean.", pt: "Pela lei, tocar tornava-te impuro. Mas o toque de Jesus torna o homem puro." } },
+                "willing": { word: { en: "willing", pt: "quero" }, icon: "heart", title: { en: "Willing", pt: "Desejoso / Quero" }, en: "Wanting to do something.", pt: "Querer fazer algo.", sketch: { en: "The man knew Jesus had the power (You can). He just needed to know if He had the love (You are willing).", pt: "O homem sabia que Jesus tinha o poder (Tu podes). Ele só precisava saber se tinha o amor (Tu queres)." } },
+                "clean": { word: { en: "clean", pt: "limpo" }, icon: "sparkles", title: { en: "Clean", pt: "Limpo" }, en: "Free from dirt or disease.", pt: "Livre de sujidade ou doença.", sketch: { en: "Restored to the community, to God, and to health.", pt: "Restaurado para a comunidade, para Deus e para a saúde." } }
+            };
+
+            const renderVerse = () => {
+                let res = verses[lang];
+                Object.keys(glossary).forEach(key => {
+                    const displayWord = glossary[key].word[lang];
+                    res = res.replace(`{${key}}`, `<span class="vocab-trigger" data-key="${key}">${displayWord}</span>`);
+                });
+                return <div dangerouslySetInnerHTML={{ __html: res }} onClick={(e) => {
+                    if(e.target.classList.contains('vocab-trigger')) setOpenKey(openKey === e.target.dataset.key ? null : e.target.dataset.key);
+                }} />;
+            };
+
+            return (
+                <div className="bible-card text-center animate-fadeIn w-full max-w-4xl mx-auto z-10 flex flex-col items-center">
+                    <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-4">Illuminated Scripture</p>
+                    <p className="text-zinc-400 font-sans-ui text-xs mb-8 uppercase tracking-widest">Matthew 8:3</p>
+                    
+                    <div className="text-3xl md:text-5xl font-serif-classic italic leading-relaxed text-zinc-200 mb-6 p-8 border border-[#D4AF37]/20 bg-black/60 shadow-inner rounded cursor-default w-full">
+                        {renderVerse()}
+                    </div>
+
+                    {openKey && (
+                        <div className="bg-[#d4c4a8] bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] border-2 border-[#a89473] rounded p-6 mt-2 mb-6 shadow-[inset_0_0_30px_rgba(139,69,19,0.3),0_15px_30px_rgba(0,0,0,0.6)] text-[#4a3622] relative overflow-hidden flex gap-6 items-center animate-slideDownFade text-left w-full">
+                            <div><Icon name={glossary[openKey].icon} size={40} className="text-[#8B6508]" /></div>
+                            <div className="z-10 relative">
+                                <p className="font-sans-ui font-black text-sm uppercase tracking-widest text-[#5c3c08] mb-1">{t(glossary[openKey].title, lang)}</p>
+                                <p className="font-serif-classic text-2xl font-bold text-[#3e2723] mb-3">"{t(glossary[openKey], lang)}"</p>
+                                <p className="font-serif-classic italic text-lg leading-relaxed text-[#6d4c41]">{t(glossary[openKey].sketch, lang)}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const SyntaxBuilderSlide = ({ s, lang, nextStep }) => {
+            const [built, setBuilt] = useState([]);
+            const [available, setAvailable] = useState([]);
+            const [msg, setMsg] = useState("");
+
+            useEffect(() => { 
+                setAvailable([...s.words].sort(() => Math.random() - 0.5)); 
+                setBuilt([]);
+                setMsg("");
+            }, [s.words]);
+
+            const handleWord = (w) => { setBuilt([...built, w]); setAvailable(available.filter(av => av !== w)); };
+
+            const check = () => {
+                if(built.join(" ") === s.correctPhrase) {
+                    setMsg(lang === 'en' ? "Truth restored." : "Verdade restaurada.");
+                    setTimeout(nextStep, 2500);
+                } else {
+                    setMsg(lang === 'en' ? "Incorrect order. Try again." : "Ordem incorreta. Tente de novo.");
+                    setAvailable([...s.words].sort(() => Math.random() - 0.5)); setBuilt([]);
+                }
+            };
+
+            return (
+                <div className="bible-card mx-auto max-w-4xl z-10 text-center animate-fadeIn">
+                    <h2 className="font-sans-ui font-black text-2xl text-sacred-gold uppercase tracking-[0.2em] mb-6">Build the Truth</h2>
+                    <p className="text-xl text-zinc-300 mb-8 font-serif-classic italic">{lang === 'en' ? "Put the words in the correct order." : "Coloque as palavras na ordem correta."}</p>
+
+                    <div className="min-h-[100px] border-2 border-dashed border-sacred-gold/40 p-6 flex flex-wrap gap-4 mb-8 bg-black/40 items-center justify-center shadow-inner rounded">
+                        {built.map((w, i) => <div key={i} className="bg-white text-black px-6 py-3 font-bold font-serif-classic rounded shadow-md">{w}</div>)}
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        {available.map((w, i) => <div key={i} onClick={() => handleWord(w)} className="bg-zinc-800 text-white px-6 py-3 font-bold font-serif-classic rounded opacity-70 hover:opacity-100 cursor-pointer border border-zinc-600">{w}</div>)}
+                    </div>
+
+                    <button onClick={check} className="btn-gold w-full text-sm">{lang === 'en' ? 'Verify Phrase' : 'Verificar Frase'}</button>
+                    <p className="text-center mt-6 text-xl font-bold h-8 text-sacred-gold tracking-widest uppercase">{msg}</p>
+                </div>
+            );
+        };
+
+        const QuizSlide = ({ s, lang, nextAction }) => {
+            const [selected, setSelected] = useState(null);
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn text-center z-10">
+                    <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-8">{lang === 'en' ? 'Knowledge Check' : 'Verificação'}</p>
+                    <h2 className="text-3xl md:text-4xl font-serif-classic italic text-white mb-10">{t(s.question, lang)}</h2>
+                    <div className="w-full flex flex-col gap-4">
+                        {s.options.map((opt, i) => (
+                            <button key={i} onClick={() => { setSelected(i); if(i === s.answerIndex) setTimeout(nextAction, 2500); }} 
+                                className={`p-6 text-left border rounded transition-all ${selected === i && i === s.answerIndex ? 'bg-emerald-900/30 border-emerald-500' : selected === i && i !== s.answerIndex ? 'bg-red-900/30 border-red-500' : 'bg-black/60 border-zinc-700 hover:border-[#D4AF37]'}`}>
+                                <p className="text-xl text-white font-sans-ui">{t(opt, lang)}</p>
+                            </button>
+                        ))}
+                    </div>
+                    {selected !== null && (
+                        <div className="mt-8">
+                            {selected === s.answerIndex ? 
+                                <p className="text-emerald-400 font-bold text-lg animate-fadeIn">{t(s.explanation, lang)}</p> : 
+                                <p className="text-red-400 font-bold text-lg animate-fadeIn">{lang === 'en' ? "Incorrect. Try again." : "Incorreto. Tente de novo."}</p>
+                            }
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ShadowingSlide = ({ s, lang }) => (
+            <div className="text-center animate-fadeIn w-full px-4 z-10">
+                <Icon name="ear-listen" size={60} className="text-[#D4AF37] mb-8 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]" />
+                <h2 className="text-2xl font-sans-ui font-black mb-12 text-[#D4AF37] uppercase tracking-[0.3em]">{t(s.title, lang)}</h2>
+                <p className="text-4xl md:text-6xl font-serif-classic italic text-white mb-8 drop-shadow-xl">"{t(s.phrase, lang)}"</p>
+                <p className="text-xl text-zinc-400 font-sans-ui bg-black/60 inline-block p-4 rounded border border-zinc-800">{t(s.translation, lang)}</p>
+            </div>
+        );
+
+        const PrayerRoom = ({ lang }) => {
+            const [recording, setRecording] = useState(false);
+            const [recorded, setRecorded] = useState(false);
+            const [progress, setProgress] = useState(0);
+
+            useEffect(() => {
+                let interval;
+                if (recording) { interval = setInterval(() => { setProgress(p => { if (p >= 100) { setRecording(false); setRecorded(true); return 100; } return p + 2; }); }, 100); }
+                return () => clearInterval(interval);
+            }, [recording]);
+
+            const statusText = recording ? (lang === 'en' ? "Recording..." : "A gravar...") : recorded ? (lang === 'en' ? "Prayer Sent" : "Oração Enviada") : (lang === 'en' ? "Tap to Record" : "Toque para Gravar");
+
+            return (
+                <div className="bible-card text-center animate-fadeIn mx-auto z-10 max-w-3xl">
+                    <p className="text-[#D4AF37] font-sans-ui font-bold tracking-[0.3em] text-[10px] uppercase mb-4">The Prayer Room</p>
+                    <h2 className="text-5xl font-serif-classic italic text-white mb-6">Speak Life</h2>
+                    <p className="text-zinc-400 font-sans-ui text-base mb-10">{lang === 'en' ? "Read the prayer aloud. Use Comparatives." : "Leia a oração em voz alta. Use Comparativos."}</p>
+
+                    <div className="bg-[#110a0a] border-2 border-[#722F37]/50 p-8 md:p-12 mb-10 rounded shadow-inner">
+                        <p className="text-3xl font-serif-classic italic text-zinc-200 leading-relaxed">
+                            "Lord, when I feel <span className="text-red-400 font-bold">dirty</span>...<br/><br/>
+                            You make me <span className="text-emerald-400 font-bold border-b-2 border-emerald-500/50">cleaner</span>.<br/><br/>
+                            Your love is <span className="text-[#D4AF37] font-bold">the greatest</span>.<br/><br/>
+                            Amen."
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                        <button onClick={() => { if(!recorded && !recording){ setRecording(true); setProgress(0); } }} disabled={recorded}
+                            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all ${recording ? 'bg-red-900 text-red-500 animate-pulse shadow-[0_0_40px_rgba(220,38,38,0.6)]' : recorded ? 'bg-emerald-900 text-emerald-500 border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'bg-black border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#1a170f] hover:scale-105 shadow-[0_0_15px_rgba(212,175,55,0.3)]'}`}>
+                            <Icon name={recorded ? "check" : "microphone-lines"} size={40} />
+                        </button>
+                        {recording && (<div className="w-56 h-3 bg-zinc-800 mt-6 rounded-full overflow-hidden border border-zinc-700"><div className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all" style={{width: `${progress}%`}}></div></div>)}
+                        <p className="mt-6 text-sm font-bold uppercase tracking-widest text-[#D4AF37]">{statusText}</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const WritingSlide = ({ s, lang }) => (
+            <div className="flex flex-col items-center justify-center h-full w-full max-w-4xl mx-auto p-8 animate-fadeIn z-10 text-center">
+                <Icon name="feather-pointed" size={50} className="text-[#D4AF37] mb-8 opacity-80" />
+                <h2 className="text-3xl font-sans-ui font-black mb-8 text-white uppercase tracking-widest">{t(s.title, lang)}</h2>
+                <p className="text-2xl text-zinc-300 font-serif-classic italic leading-relaxed mb-8">{t(s.sub, lang) || (lang === 'en' ? "Open the Theological Notes (Top Right) and write your reflection." : "Abra as Notas Teológicas (Canto Superior Direito) e escreva a sua reflexão.")}</p>
+                <div className="bg-black/60 border border-[#D4AF37]/40 p-8 w-full text-left rounded shadow-xl">
+                    <p className="text-[#D4AF37] font-bold uppercase tracking-widest text-xs mb-4">Prompt</p>
+                    <p className="text-xl text-zinc-200 font-sans-ui font-light">{t(s.prompt, lang)}</p>
+                </div>
+            </div>
+        );
+
+        // ==========================================
+        // 📚 25 SLIDES DATA (V8.0 - A2 Level)
+        // ==========================================
+        const SLIDES_DATA = [
+            { type: "cover", title: { en: "The Healer's Touch", pt: "O Toque d'Ele" }, subtitle: { en: "The Outcast", pt: "O Rejeitado" }, level: "A2 (Pre-Intermediate)", grammar: "Comparatives & Superlatives" }, // 1
+            { type: "guide", title: { en: "Teacher's Guide", pt: "Guia do Professor" }, content: { en: "Welcome to V8.0. In this 25-page A2 lesson, we explore the healing of the untouchable man. We will focus on Adjectives (Clean/Sick) and their Comparatives/Superlatives (Cleaner/The Greatest) using the exclusive 'Restoration Scale' mechanic.", pt: "Bem-vindo à V8.0. Nesta aula A2, exploramos a cura do homem intocável. Focamo-nos em Adjetivos e Comparativos/Superlativos usando a mecânica exclusiva 'Escala de Restauração'." } }, // 2
+            { type: "discussion", icon: "user-slash", title: { en: "Isolation", pt: "Isolamento" }, question: { en: "When do people feel lonely or rejected in today's world?", pt: "Quando é que as pessoas se sentem sozinhas ou rejeitadas hoje em dia?" }, hint: { en: "People feel rejected when... / Sometimes we feel lonely if...", pt: "As pessoas sentem-se rejeitadas quando... / Às vezes sentimo-nos sozinhos se..." } }, // 3
+            { type: "vocab_match", title: { en: "Illness & Health", pt: "Doença e Saúde" }, pairs: [
+                { w: "Illness", d: "A state of being sick in body or mind." },
+                { w: "Clean", d: "Pure, completely free from dirt or disease." },
+                { w: "Outcast", d: "A person rejected by their community." }
+            ], followUpQ: { en: "Why is an 'Outcast' more painful than an 'Illness'?", pt: "Por que é que ser um 'Rejeitado' é mais doloroso do que uma 'Doença'?" }, followUpHint: { en: "An illness hurts the body, but rejection hurts...", pt: "Uma doença dói no corpo, mas a rejeição dói..." } }, // 4
+            { type: "scholar", title: { en: "Historical Context", pt: "Contexto Histórico" }, content: { en: "In the 1st century, some sicknesses meant you were cursed. You had to live outside the city, shout 'Unclean!', and no one could touch you.", pt: "No século I, certas doenças significavam que estavas amaldiçoado. Tinhas de viver fora da cidade e ninguém te podia tocar." } }, // 5
+            { type: "video_chunk", chunk: 1, videoId: YOUTUBE_ID, start: 0, end: 75, title: { en: "The Approach", pt: "A Aproximação" }, mission: { en: "Watch the man approach Jesus.", pt: "Veja o homem aproximar-se de Jesus." } }, // 6
+            { type: "script", speaker: { en: "The Man", pt: "O Homem" }, quote: { en: "Please, do not turn away from me.", pt: "Por favor, não te afastes de mim." }, analysis: { en: "He expects Jesus to run away, because everyone runs away from him.", pt: "Ele espera que Jesus fuja, porque todos fogem dele." }, followUpQ: { en: "How does it feel to expect rejection?", pt: "O que se sente ao esperar sempre rejeição?" }, followUpHint: { en: "It feels terrible because...", pt: "Sente-se terrível porque..." } }, // 7
+            { type: "grammar", icon: "arrow-down", title: { en: "Describing States", pt: "Descrever Estados" }, subtitle: { en: "We use adjectives to describe the present state.", pt: "Usamos adjetivos para descrever o estado presente." }, examples: [{ en: "The man is <span class='text-zinc-500 font-bold'>sick</span>.", pt: "O homem está <span class='text-zinc-500 font-bold'>doente</span>." }, { en: "He feels <span class='text-zinc-500 font-bold'>bad</span>.", pt: "Ele sente-se <span class='text-zinc-500 font-bold'>mal</span>." }] }, // 8
+            { type: "grammarComparatives" }, // 9
+            { type: "restoration", title: { en: "The Restoration Scale", pt: "Escala de Restauração" }, desc: { en: "Choose the correct comparative to heal the screen.", pt: "Escolha o comparativo correto para curar o ecrã." }, questions: [
+                { text: { en: "The man's life was bad. He wanted a _____ life.", pt: "A vida do homem era má. Ele queria uma vida _____." }, options: ["Worse", "Bad", "Better"], correct: 2 },
+                { text: { en: "He was considered dirty. He wanted to be _____.", pt: "Ele era considerado sujo. Ele queria ser _____." }, options: ["Cleanest", "Cleaner", "Clean"], correct: 1 },
+                { text: { en: "Jesus' love is _____ than the illness.", pt: "O amor de Jesus é _____ que a doença." }, options: ["Stronger", "Strong", "Strongest"], correct: 0 },
+                { text: { en: "It was _____ moment of his life.", pt: "Foi _____ momento da sua vida." }, options: ["The greatest", "Greater", "Great"], correct: 0 }
+            ]}, // 10
+            { type: "discussion", icon: "hand-holding-hand", title: { en: "The Touch", pt: "O Toque" }, question: { en: "If you touch an unclean man, the law says YOU become unclean. Why does Jesus risk it?", pt: "Se tocares num homem impuro, a lei diz que ficas impuro. Por que é que Jesus arrisca?" }, hint: { en: "Jesus is not afraid of... / Because His love is...", pt: "Jesus não tem medo de... / Porque o Seu amor é..." } }, // 11
+            { type: "video_chunk", chunk: 2, videoId: YOUTUBE_ID, start: 75, end: 160, title: { en: "The Healing", pt: "A Cura" }, mission: { en: "Watch what Jesus does first.", pt: "Veja o que Jesus faz primeiro." } }, // 12
+            { type: "script", speaker: { en: "Jesus", pt: "Jesus" }, quote: { en: "I am willing. Be clean.", pt: "Eu quero. Sê limpo." }, analysis: { en: "Jesus doesn't just heal his body; He heals his dignity by touching him first.", pt: "Jesus não cura apenas o corpo; Ele cura a dignidade dele tocando-lhe primeiro." }, followUpQ: { en: "Why did Jesus TOUCH him before healing the skin?", pt: "Por que é que Jesus o TOCOU antes de curar a pele?" }, followUpHint: { en: "Because the man needed... / Because human touch means...", pt: "Porque o homem precisava de... / Porque o toque humano significa..." } }, // 13
+            { type: "quiz", question: { en: "What did Jesus do BEFORE healing him?", pt: "O que Jesus fez ANTES de o curar?" }, options: [{ en: "He asked for money.", pt: "Ele pediu dinheiro." }, { en: "He touched him.", pt: "Ele tocou-lhe." }, { en: "He walked away.", pt: "Ele afastou-se." }], answerIndex: 1, explanation: { en: "Correct! The touch came before the physical healing.", pt: "Correto! O toque veio antes da cura física." } }, // 14
+            { type: "builder", words: ["He", "reached", "out", "his", "hand", "and", "touched", "him."], correctPhrase: "He reached out his hand and touched him.", title: { en: "Build the Verse", pt: "Construa o Versículo" }, desc: { en: "Matthew 8:3", pt: "Mateus 8:3" } }, // 15
+            { type: "illuminated" }, // 16
+            { type: "dilemma", title: { en: "The Comfort Zone", pt: "A Zona de Conforto" }, question: { en: "Would you touch or help someone the world rejected?", pt: "Tocarias ou ajudarias alguém que o mundo rejeitou?" }, hint: { en: "It would be hard, but I would... / I think I would feel...", pt: "Seria difícil, mas eu... / Eu acho que sentiria..." } }, // 17
+            { type: "discussion", icon: "heart", title: { en: "Better and Cleaner", pt: "Melhor e Mais Limpo" }, question: { en: "How does the man feel now compared to before? (Use comparatives)", pt: "Como o homem se sente agora em comparação a antes? (Use comparativos)" }, hint: { en: "He feels much better... / His life is brighter...", pt: "Ele sente-se muito melhor... / A sua vida é mais brilhante..." } }, // 18
+            { type: "shadowing", title: { en: "Listen & Repeat", pt: "Ouça e Repita" }, phrase: { en: "Please, do not turn away from me.", pt: "Por favor, não te afastes de mim." }, translation: { en: "(The cry of the outcast.)", pt: "(O choro do rejeitado.)" } }, // 19
+            { type: "shadowing", title: { en: "Listen & Repeat", pt: "Ouça e Repita" }, phrase: { en: "I am willing. Be clean.", pt: "Eu quero. Sê limpo." }, translation: { en: "(The voice of Restoration.)", pt: "(A voz da Restauração.)" } }, // 20
+            { type: "prayer" }, // 21
+            { type: "writing", title: { en: "The Scribe's Journal", pt: "O Diário do Escriba" }, prompt: { en: "Write about a time you felt 'unclean' or rejected. How did it make you feel?", pt: "Escreve sobre um momento em que te sentiste 'impuro' ou rejeitado. Como te fez sentir?" } }, // 22
+            { type: "writing", title: { en: "Your Confession", pt: "A Tua Confissão" }, prompt: { en: "Write how Jesus makes things better. Use a comparative (e.g., With Him, I am stronger).", pt: "Escreve como Jesus torna as coisas melhores. Usa um comparativo (ex: Com Ele, sou mais forte)." }, sub: { en: "Declare your restoration.", pt: "Declara a tua restauração." } }, // 23
+            { type: "end" } // 24 (25 with index 0)
+        ];
+
+        // --- MAIN APP ---
+        function App() {
+            const [slideIdx, setSlideIdx] = useState(0);
+            const [lang, setLang] = useState('en');
+            const [isAppFullscreen, setIsAppFullscreen] = useState(false);
+
+            useEffect(() => {
+                const handleFsChange = () => setIsAppFullscreen(!!document.fullscreenElement);
+                document.addEventListener('fullscreenchange', handleFsChange);
+                return () => document.removeEventListener('fullscreenchange', handleFsChange);
+            }, []);
+
+            const toggleAppFullscreen = async () => {
+                try {
+                    if (!document.fullscreenElement) {
+                        if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); }
+                    } else {
+                        if (document.exitFullscreen) { await document.exitFullscreen(); }
+                    }
+                } catch (e) { console.warn("Fullscreen issue:", e); }
+            };
+
+            const toggleLang = () => setLang(l => l === 'en' ? 'pt' : 'en');
+            const next = () => { if (slideIdx < SLIDES_DATA.length - 1) setSlideIdx(s => s + 1); };
+            const prev = () => { if (slideIdx > 0) setSlideIdx(s => s - 1); };
+
+            const current = SLIDES_DATA[slideIdx];
+
+            const renderSlide = () => {
+                switch (current.type) {
+                    case "cover": return <CoverSlide s={current} lang={lang} next={next} />;
+                    case "guide": return <GuideSlide s={current} lang={lang} />;
+                    case "discussion": return <DiscussionSlide s={current} lang={lang} />;
+                    case "vocab_match": return <VocabMatchSlide key={slideIdx} s={current} lang={lang} />;
+                    case "scholar": return <ScholarDeskSlide title={current.title} content={current.content} lang={lang} />;
+                    case "video_chunk": return <VideoChunkSlide s={current} lang={lang} />;
+                    case "script": return <ScriptSlide s={current} lang={lang} />;
+                    case "grammar": return <GrammarSlide s={current} lang={lang} />;
+                    case "grammarComparatives": return <GrammarComparatives lang={lang} />;
+                    case "restoration": return <RestorationScaleSlide key={slideIdx} s={current} lang={lang} nextStep={next} />;
+                    case "quiz": return <QuizSlide s={current} lang={lang} nextAction={next} />;
+                    case "builder": return <SyntaxBuilderSlide key={slideIdx} s={current} lang={lang} nextStep={next} />;
+                    case "illuminated": return <IlluminatedMatthew lang={lang} />;
+                    case "dilemma": return <DilemmaSlide s={current} lang={lang} />;
+                    case "shadowing": return <ShadowingSlide s={current} lang={lang} />;
+                    case "prayer": return <PrayerRoom lang={lang} />;
+                    case "writing": return <WritingSlide s={current} lang={lang} />;
+                    case "end":
+                        return (
+                            <div className="text-center animate-fadeIn flex flex-col items-center">
+                                <Icon name="dove" size={80} className="text-[#D4AF37] mb-8 drop-shadow-[0_0_30px_rgba(212,175,55,0.6)]" />
+                                <h1 className="text-6xl md:text-8xl font-serif-classic italic text-white mb-6 drop-shadow-2xl">Go in peace.</h1>
+                                <p className="text-zinc-300 font-sans-ui text-lg uppercase tracking-widest mb-12 bg-black/50 p-4 rounded border border-[#D4AF37]/30">
+                                    {lang === 'en' ? "You are clean." : "Estás limpo."}
+                                </p>
+                                <button onClick={() => window.location.reload()} className="bg-[#111] border-2 border-zinc-700 text-zinc-300 px-10 py-4 uppercase tracking-[0.2em] font-bold text-sm hover:border-[#D4AF37] hover:text-white transition-all rounded shadow-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                                    {lang === 'en' ? 'Return to start' : 'Voltar ao Início'}
+                                </button>
+                            </div>
+                        );
+                    default: return <div className="text-white">Module Error</div>;
+                }
+            };
+
+            return (
+                <div className="w-full h-screen relative flex flex-col font-sans-ui selection:bg-[#D4AF37]/30 selection:text-white bg-[#050403]">
+                    <div className="leather-overlay"></div>
+                    <div className="desert-bg"></div>
+                    <div className="dust-overlay"></div>
+                    <div className="cross-watermark"><Icon name="cross" /></div>
+                    <div className="divine-glow"></div>
+                    <div className="gilded-edges gilded-edge-left"></div>
+                    <div className="gilded-edges gilded-edge-right"></div>
+                    <div className="corner-ornament corner-tl"></div>
+                    <div className="corner-ornament corner-tr"></div>
+                    <div className="corner-ornament corner-bl"></div>
+                    <div className="corner-ornament corner-br"></div>
+                    <div className="gold-foil-frame"></div>
+                    <div className="bookmark-ribbon"></div>
+                    
+                    <TeacherTools lang={lang} toggleLang={toggleLang} isFs={isAppFullscreen} toggleFs={toggleAppFullscreen} />
+
+                    <div className="flex-1 relative z-10 w-full h-full overflow-y-auto safe-scroll-container">
+                        <div className="safe-scroll-content">
+                            {renderSlide()}
+                        </div>
+                    </div>
+
+                    {/* Navigation Footer */}
+                    {slideIdx > 0 && current.type !== 'end' && (
+                        <div className="z-50 w-full p-6 absolute bottom-0 flex flex-col items-center bg-gradient-to-t from-black via-black/80 to-transparent">
+                            <div className="max-w-5xl w-full flex justify-between items-center relative">
+                                <button onClick={prev} disabled={slideIdx === 0} className="text-zinc-500 hover:text-[#D4AF37] font-bold text-xs uppercase tracking-widest disabled:opacity-30 transition-colors flex items-center gap-2 drop-shadow-md">
+                                    <Icon name="chevron-left" size={14} /> {lang === 'en' ? 'Back' : 'Anterior'}
+                                </button>
+                                
+                                <div className="absolute left-1/2 transform -translate-x-1/2 text-[#D4AF37] font-bold tracking-[0.3em] text-[10px] uppercase hidden sm:block opacity-70">
+                                    {lang === 'en' ? 'PAGE' : 'PÁGINA'} {slideIdx + 1} {lang === 'en' ? 'OF' : 'DE'} {SLIDES_DATA.length}
+                                </div>
+
+                                <button onClick={next} disabled={slideIdx === SLIDES_DATA.length - 1} className="text-[#D4AF37] hover:text-white font-bold text-xs uppercase tracking-widest disabled:opacity-30 transition-colors flex items-center gap-2 drop-shadow-md">
+                                    {lang === 'en' ? 'Next' : 'Próximo'} <Icon name="chevron-right" size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
